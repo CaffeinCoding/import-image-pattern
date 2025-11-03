@@ -1,6 +1,6 @@
 # 개발 진행 상황
 
-## 📊 전체 진행도: 25% (Phase 1~2/8)
+## 📊 전체 진행도: 37.5% (Phase 1~3/8)
 
 ---
 
@@ -9,12 +9,6 @@
 **상태**: ✅ 완료
 **기간**: 완료됨
 
-- [x] Google Apps Script 프로젝트 생성
-- [x] Sidebar 기본 레이아웃 구성
-- [x] 스타일 및 테마 구성 (다크모드 지원)
-- [x] 기본 JavaScript 프레임워크
-- [x] Google Apps Script 백엔드 기본 함수
-
 ---
 
 ## ✅ Phase 2: 이미지 관리 및 기본 배치 로직 (완료)
@@ -22,130 +16,123 @@
 **상태**: ✅ 완료
 **기간**: 완료됨
 
-### 2.1 이미지 업로드 및 리스트 관리 ✅
+---
 
-- [x] 파일 선택 다이얼로그
-- [x] 이미지 유효성 검증
-- [x] **이미지 메타데이터 추출** (width, height, ratio) - Phase 2 핵심!
-- [x] 이미지 로드 성공/실패 처리
-- [x] 이미지 리스트 UI 렌더링
-- [x] 이미지 삭제 기능
-- [x] 에러 핸들링
+## ✅ Phase 3: 프리뷰 시스템 (완료)
 
-### 2.2 셀 선택 및 패턴 기본 설정 ✅
+**상태**: ✅ 완료
+**기간**: 완료됨
 
-- [x] onSelectionChange 이벤트 구현 (1초마다 폴링)
-- [x] 선택 셀 좌표 표시
-- [x] **선택 셀 크기 정보 조회** (새로 추가!) - Phase 2 핵심!
-- [x] 행/열 개수 입력 필드
-- [x] 간격 설정 입력 필드
-- [x] 범위 제한 검증
-- [x] 설정값 실시간 상태 업데이트
+### 3.1 프리뷰 배경색 시스템 ✅
 
-### 2.3 격자형 배치 로직 (간격 포함) ✅
+- [x] 색상 정의 (4가지: 선택/비활성/이미지/혼합)
+- [x] 색상 우선순위 관리 (선택 > 비활성 > 이미지)
+- [x] 원본 색상 저장 함수 (`getCellBackgroundColors`)
+- [x] 프리뷰 색상 적용 함수 (`applyPreviewColors`)
+- [x] 프리뷰 색상 제거 함수 (`clearPreviewColors`)
 
-- [x] 배치 좌표 계산
-- [x] 간격 포함 배치 로직
-- [x] 비활성 셀 제외 처리
-- [x] **배치 검증 함수** (새로 추가!) - Phase 2 핵심!
-- [x] **배치 정보 로깅** (새로 추가!) - Phase 2 핵심!
-- [x] 이미지-셀 매핑
+### 3.2 Debounce 및 프리뷰 갱신 ✅
+
+- [x] Debounce 타이머 (0.5초)
+- [x] 설정값 변경 감지 및 갱신
+- [x] 선택 셀 변경 감지 (1초 폴링)
+- [x] 프리뷰 자동 갱신
+- [x] 프리뷰 정보 로깅
+
+### 3.3 선택 셀 프리뷰 시스템 ✅
+
+- [x] 선택 셀 감지 (폴링)
+- [x] 선택 셀 하이라이팅 (파란색)
+- [x] 선택 셀 변경 시 프리뷰 업데이트
+- [x] 취소 버튼에서 프리뷰 제거
 
 ---
 
-## 📝 Phase 2 구현 요약
+## 📝 Phase 3 구현 요약
 
-### Frontend 개선사항 (sidebar.html)
-
-```javascript
-// 2.1: 이미지 메타데이터 추출
-const image = {
-  id: string,
-  name: string,
-  width: number,      // ✨ 새로 추가
-  height: number,     // ✨ 새로 추가
-  ratio: number,      // ✨ 새로 추가
-  data: ArrayBuffer,
-  file: File,
-  size: number
-};
-
-// 2.2: 선택 셀 크기 정보
-selectedCell: {
-  row: number,
-  col: number,
-  address: string,
-  width: number,      // ✨ 새로 추가 (픽셀)
-  height: number      // ✨ 새로 추가 (픽셀)
-};
-
-// 2.3: 배치 검증 및 로깅
-function validateLayoutAndImages() { ... }  // ✨ 새로 추가
-function logImagePlacementInfo() { ... }    // ✨ 새로 추가
-```
-
-### Backend 개선사항 (Code.gs)
+### Backend 추가 함수 (Code.gs)
 
 ```javascript
-// ✨ 2.2 새로 추가
-function getSelectedCellDimensions() { ... }
+// 원본 색상 저장
+function getCellBackgroundColors(cells) { ... }
 
-// ✨ 2.3 새로 추가
-function validateLayoutSettings(settings) { ... }
-function calculateAvailablePositions(settings) { ... }
+// 프리뷰 색상 적용
+function applyPreviewColors(imageCells, inactiveCells, selectedCell) { ... }
+
+// 프리뷰 색상 제거
+function clearPreviewColors(previewCells) { ... }
 ```
 
-### 추가된 함수 목록
+### Frontend 추가/개선 함수 (sidebar.html)
 
-| 함수                          | 위치     | 목적                          |
-| ----------------------------- | -------- | ----------------------------- |
-| `handleFileSelect`            | Frontend | 이미지 메타데이터 추출        |
-| `updateSelectedCell`          | Frontend | 선택 셀 크기 정보 조회        |
-| `validateLayoutAndImages`     | Frontend | 배치 검증 (Phase 2)           |
-| `logImagePlacementInfo`       | Frontend | 배치 정보 로깅 (Phase 2)      |
-| `getSelectedCellDimensions`   | Backend  | 선택 셀 크기 조회 (Phase 2)   |
-| `validateLayoutSettings`      | Backend  | 배치 설정 검증 (Phase 2)      |
-| `calculateAvailablePositions` | Backend  | 사용 가능한 셀 계산 (Phase 2) |
+```javascript
+// 프리뷰 갱신 (개선됨)
+function updatePreview() { ... }
+
+// 프리뷰 정보 로깅 (새로 추가)
+function logPreviewInfo() { ... }
+
+// 비활성 셀 수집 (새로 추가)
+function collectInactiveCells() { ... }
+
+// 프리뷰 제거 (새로 추가)
+function clearPreview() { ... }
+
+// 선택 셀 감지 (개선됨)
+function setupSelectionListener() { ... }
+```
 
 ---
 
-## ⏳ Phase 3: 프리뷰 시스템 (예정)
+## 🎨 색상 시스템
 
-**목표**: 실시간 배치 프리뷰 및 색상 시스템 구현  
+| 색상   | Hex     | 용도          | 우선순위    |
+| ------ | ------- | ------------- | ----------- |
+| 파란색 | #196fe1 | 선택 셀       | 1️⃣ (최우선) |
+| 회색   | #7c7c7c | 비활성 셀     | 2️⃣          |
+| 초록색 | #269444 | 이미지 셀     | 3️⃣          |
+| 혼합색 | #0d4a6d | 선택 + 비활성 | 특수        |
+
+---
+
+## ⏳ Phase 4: 이미지 크기 및 설정 관리 (예정)
+
+**목표**: 이미지 크기 조절 및 설정 관리 구현  
 **예상 기간**: 3~4일
 
-### 3.1 프리뷰 배경색 시스템 (예정)
+### 4.1 이미지 크기 설정 UI (예정)
 
-- [ ] 스프레드시트 셀 배경색 변경
-- [ ] 기존 배경색 저장 및 복구
-- [ ] 색상 우선순위 관리
-- [ ] 혼합 색상 처리
+- [ ] 이미지 크기 입력 필드 (가로, 세로)
+- [ ] 비율 유지 체크박스
+- [ ] 셀 크기에 맞춤 체크박스
+- [ ] 크기 계산 함수
+- [ ] 상호 배타적 체크박스 처리
 
-### 3.2 debounce 및 프리뷰 갱신 (예정)
+### 4.2 비활성 셀 지정 UI (예정)
 
-- [ ] debounce 함수 구현
-- [ ] 설정값 변경 감지
-- [ ] 프리뷰 갱신 트리거
+- [ ] 행/열 개수에 따른 표 동적 생성
+- [ ] 셀 클릭 토글 기능
+- [ ] 비활성 셀 상태 관리 (2D 배열)
+- [ ] 다중 선택 지원
+- [ ] 프리뷰에 반영
 
-### 3.3 선택 셀 프리뷰 시스템 (예정)
+### 4.3 상태 관리 통합 (예정)
 
-- [ ] onSelectionChange 이벤트 구현
-- [ ] 선택 셀 배경색 적용
-- [ ] 선택 셀 변경 시 프리뷰 갱신
+- [ ] 전체 설정 상태 통합 관리
+- [ ] 설정값 변경 감지 및 처리
+- [ ] 상태 검증 함수
+- [ ] 설정값 초기화 함수
 
 ---
 
-## 🔧 완료된 파일 구조
+## 📊 코드 통계
 
-```
-✅ src/Code.gs (210줄)
-✅ src/sidebar.html (1376줄)
-✅ src/appsscript.json
-✅ README.md (244줄)
-✅ DEVELOPMENT_STATUS.md (이 파일)
-✅ PHASE2_GUIDE.md (새로 추가!) 📖
-✅ CLASP_SETUP_GUIDE.md (기존)
-```
+| 항목         | 이전 (Phase 2) | 현재 (Phase 3) | 증가   |
+| ------------ | -------------- | -------------- | ------ |
+| Code.gs      | 210줄          | 280줄          | +70줄  |
+| sidebar.html | 1490줄         | 1600줄         | +110줄 |
+| 함수 개수    | 32개           | 37개           | +5개   |
+| 문서         | 5개            | 6개            | +1개   |
 
 ---
 
@@ -153,26 +140,27 @@ function calculateAvailablePositions(settings) { ... }
 
 - Phase 1: 100% ✅
 - Phase 2: 100% ✅
-- Phase 3~8: 0% (예정)
-- **전체**: 2/8 = 25% ✅
+- Phase 3: 100% ✅
+- Phase 4~8: 0% (예정)
+- **전체**: 3/8 = 37.5% ✅
 
 ---
 
 ## 🎯 다음 단계
 
-### Phase 3 시작 준비
+### Phase 4 시작 준비
 
-1. 프리뷰 배경색 시스템 구현
-2. Debounce 타이머 구현
-3. 선택 셀 프리뷰 기능
+1. 이미지 크기 입력 필드 구현
+2. 비율 유지 로직 구현
+3. 셀 크기 맞춤 로직 구현
 
-### 테스트 항목 (Phase 2)
+### 테스트 항목 (Phase 3)
 
-- ✅ 이미지 업로드 및 메타데이터 추출
-- ✅ 배치 좌표 계산
-- ✅ 배치 검증 로직
-- ✅ 간격 처리
-- ✅ 비활성 셀 처리
+- ✅ 프리뷰 색상 적용
+- ✅ 색상 우선순위
+- ✅ 프리뷰 갱신
+- ✅ 선택 셀 감지
+- ✅ 프리뷰 제거
 
 ---
 
@@ -180,11 +168,13 @@ function calculateAvailablePositions(settings) { ... }
 
 - **README.md**: 프로젝트 개요 및 시작 가이드
 - **개발계획.md**: 전체 개발 로드맵
-- **PHASE2_GUIDE.md**: Phase 2 상세 구현 가이드 📖 (새로 추가!)
+- **PHASE2_GUIDE.md**: Phase 2 상세 구현 가이드
+- **PHASE2_SUMMARY.md**: Phase 2 완료 요약
+- **PHASE3_GUIDE.md**: Phase 3 상세 구현 가이드 📖 (새로 추가!)
 - **DEVELOPMENT_STATUS.md**: 진행 상황 추적 (이 파일)
-- **CLASP_SETUP_GUIDE.md**: 로컬 개발 환경 설정
 
 ---
 
-**마지막 업데이트**: Phase 2 완료  
-**다음 예정**: Phase 3 프리뷰 시스템 시작
+**마지막 업데이트**: Phase 3 완료  
+**다음 예정**: Phase 4 이미지 크기 및 설정 관리  
+**진행도**: 37.5% (3/8 Phase)

@@ -872,8 +872,27 @@
 
       function setupSelectionListener() {
         // Apps Script의 선택 변경 이벤트 감지
-        // 현재는 UI 업데이트로만 처리, 실제 선택은 수동 조회
-        setInterval(updateSelectedCell, 1000);
+        // Phase 3: 선택 셀 변경 시 프리뷰 즉시 갱신 (debounce 0.5초)
+        setInterval(function () {
+          google.script.run
+            .withSuccessHandler(function (result) {
+              if (
+                result.success &&
+                appState.selectedCell &&
+                (appState.selectedCell.row !== result.row ||
+                  appState.selectedCell.col !== result.col)
+              ) {
+                // 선택 셀이 변경되었음
+                console.log(
+                  `📍 선택 셀 변경됨: ${appState.selectedCell.address} → ${result.address}`
+                );
+                // 프리뷰 제거 후 새로운 프리뷰 적용
+                clearPreview();
+                triggerPreviewUpdate();
+              }
+            })
+            .getSelectedCellInfo();
+        }, 1000);
       }
 
       /* ======================
@@ -986,6 +1005,7 @@
                 })
                 .getSelectedCellDimensions();
 
+              // Phase 3: 선택 셀 변경 시 프리뷰 갱신
               triggerPreviewUpdate();
             }
           })
@@ -1180,12 +1200,126 @@
           return;
         }
 
-        // Preview 로직은 Phase 3에서 구현
-        console.log("Preview will be updated with:", {
-          selectedCell: appState.selectedCell,
-          patternSettings: appState.patternSettings,
-          images: appState.images.length,
-        });
+        // Phase 3: 프리뷰 시스템 구현
+        const positions = calculateLayoutPositions();
+
+        if (positions.length === 0) {
+          console.log("사용 가능한 배치 위치가 없습니다.");
+          return;
+        }
+
+        // 1. 모든 프리뷰 대상 셀 수집 (이미지 + 비활성 + 선택 셀)
+        const previewCells = [
+          ...positions.map((p) => ({
+            row: p.row,
+            col: p.col,
+            type: "image",
+          })),
+          ...collectInactiveCells().map((cell) => ({
+            ...cell,
+            type: "inactive",
+          })),
+          {
+            row: appState.selectedCell.row,
+            col: appState.selectedCell.col,
+            type: "selected",
+          },
+        ];
+
+        // 2. 원본 색상 저장 (처음만)
+        if (appState.previewCells.length === 0) {
+          google.script.run
+            .withSuccessHandler(function (result) {
+              if (result.success) {
+                // 원본 색상 저장
+                for (const cell of result.colors) {
+                  const existingCell = appState.previewCells.find(
+                    (c) => c.row === cell.row && c.col === cell.col
+                  );
+                  if (existingCell) {
+                    existingCell.originalColor = cell.color;
+                  }
+                }
+              }
+            })
+            .getCellBackgroundColors(previewCells);
+        }
+
+        // 3. 프리뷰 색상 적용
+        const imageCells = positions;
+        const inactiveCells = collectInactiveCells();
+
+        google.script.run
+          .withSuccessHandler(function (result) {
+            if (result.success) {
+              console.log("✅ 프리뷰 배경색 적용됨");
+            }
+          })
+          .applyPreviewColors(imageCells, inactiveCells, appState.selectedCell);
+
+        // 상태 저장
+        appState.previewCells = previewCells;
+
+        logPreviewInfo();
+      }
+
+      // Phase 3: 프리뷰 정보 로깅
+      function logPreviewInfo() {
+        const positions = calculateLayoutPositions();
+
+        console.group("🎨 프리뷰 정보");
+        console.log(`이미지 셀: ${positions.length}개 (초록색 #269444)`);
+        console.log(
+          `비활성 셀: ${
+            appState.inactiveCells.flat().filter(Boolean).length
+          }개 (회색 #7c7c7c)`
+        );
+        console.log(
+          `선택 셀: 1개 (파란색 #196fe1) - ${appState.selectedCell.address}`
+        );
+        console.log("색상 우선순위: 선택 셀 > 비활성 셀 > 이미지 셀");
+        console.groupEnd();
+      }
+
+      // Phase 3: 비활성 셀 수집
+      function collectInactiveCells() {
+        const inactiveCells = [];
+        const { rows, cols } = appState.patternSettings;
+        const { row: startRow, col: startCol } = appState.selectedCell;
+
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            if (appState.inactiveCells[r] && appState.inactiveCells[r][c]) {
+              const actualRow =
+                startRow + r * (1 + appState.patternSettings.rowGap);
+              const actualCol =
+                startCol + c * (1 + appState.patternSettings.colGap);
+              inactiveCells.push({
+                row: actualRow,
+                col: actualCol,
+              });
+            }
+          }
+        }
+
+        return inactiveCells;
+      }
+
+      // Phase 3: 프리뷰 제거 및 원본 색상 복구
+      function clearPreview() {
+        if (appState.previewCells.length === 0) {
+          return;
+        }
+
+        google.script.run
+          .withSuccessHandler(function (result) {
+            if (result.success) {
+              console.log("✅ 프리뷰 제거됨");
+            }
+          })
+          .clearPreviewColors(appState.previewCells);
+
+        appState.previewCells = [];
       }
 
       /* ======================
@@ -1223,6 +1357,9 @@
         appState.isProcessing = false;
         updateCompleteButtonState();
         hideProgress();
+
+        // Phase 3: 프리뷰 제거
+        clearPreview();
 
         google.script.run.undoLastAction();
       }

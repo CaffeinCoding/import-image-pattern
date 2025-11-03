@@ -227,6 +227,102 @@ function restoreOriginalColors(cells) {
 }
 
 /**
+ * 셀 배경색 조회 (Phase 3)
+ * @param {Array<{row, col}>} cells - 셀 좌표 배열
+ * @returns {Array<{row, col, color}>} 각 셀의 배경색
+ */
+function getCellBackgroundColors(cells) {
+  try {
+    const sheet = SpreadsheetApp.getActiveSheet();
+    const colors = [];
+
+    for (const cell of cells) {
+      const range = sheet.getRange(cell.row, cell.col);
+      colors.push({
+        row: cell.row,
+        col: cell.col,
+        color: range.getBackground(),
+      });
+    }
+
+    return { success: true, colors: colors };
+  } catch (e) {
+    return { success: false, error: e.toString() };
+  }
+}
+
+/**
+ * 프리뷰 배경색 일괄 설정 (Phase 3)
+ * @param {Array} imageCells - 이미지 셀 배열
+ * @param {Array} inactiveCells - 비활성 셀 배열
+ * @param {Object} selectedCell - 선택된 셀 정보
+ */
+function applyPreviewColors(imageCells, inactiveCells, selectedCell) {
+  try {
+    const sheet = SpreadsheetApp.getActiveSheet();
+    const COLORS = {
+      selected: "#196fe1", // 선택 셀 (파란색)
+      inactive: "#7c7c7c", // 비활성 셀 (회색)
+      image: "#269444", // 이미지 셀 (초록색)
+      mixed: "#0d4a6d", // 혼합 (선택 + 비활성)
+    };
+
+    // 1. 이미지 셀에 초록색 적용
+    for (const cell of imageCells) {
+      const range = sheet.getRange(cell.row, cell.col);
+      range.setBackground(COLORS.image);
+    }
+
+    // 2. 비활성 셀에 회색 적용 (이미지 셀 제외)
+    for (const cell of inactiveCells) {
+      const isImageCell = imageCells.some(
+        (img) => img.row === cell.row && img.col === cell.col
+      );
+      if (!isImageCell) {
+        const range = sheet.getRange(cell.row, cell.col);
+        range.setBackground(COLORS.inactive);
+      }
+    }
+
+    // 3. 선택 셀에 파란색 적용 (우선순위 최고)
+    if (selectedCell) {
+      const range = sheet.getRange(selectedCell.row, selectedCell.col);
+
+      // 선택 셀이 비활성 셀이면 혼합 색상
+      const isInactive = inactiveCells.some(
+        (cell) => cell.row === selectedCell.row && cell.col === selectedCell.col
+      );
+
+      range.setBackground(isInactive ? COLORS.mixed : COLORS.selected);
+    }
+
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e.toString() };
+  }
+}
+
+/**
+ * 프리뷰 색상 제거 및 원본 색상 복구 (Phase 3)
+ * @param {Array} previewCells - 프리뷰 대상이었던 셀들
+ */
+function clearPreviewColors(previewCells) {
+  try {
+    const sheet = SpreadsheetApp.getActiveSheet();
+
+    for (const cell of previewCells) {
+      const range = sheet.getRange(cell.row, cell.col);
+      // 원본 색상으로 복구
+      range.setBackground(cell.originalColor || "#ffffff");
+    }
+
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e.toString() };
+  }
+}
+
+/**
  * Undo 기능 호출
  */
 function undoLastAction() {
