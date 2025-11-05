@@ -213,9 +213,6 @@ function insertImages(images, startCell, settings, positions) {
     );
     Logger.log(`🖼️  이미지 형식: ${images[0]?.mimeType || "unknown"}`);
 
-    // Logger.log("⏳ 초기 대기: 1초");
-    // Utilities.sleep(1000);
-
     for (let i = 0; i < images.length; i++) {
       const image = images[i];
       const position = positions[i];
@@ -232,9 +229,6 @@ function insertImages(images, startCell, settings, positions) {
           position.width,
           position.height
         );
-
-        // ✅ 각 이미지 삽입 후 즉시 화면에 반영
-        SpreadsheetApp.flush();
 
         successCount++;
         results.push({
@@ -274,7 +268,10 @@ function insertImages(images, startCell, settings, positions) {
 
     const failedCount = results.filter((r) => !r.success).length;
 
+    // ✅ 모든 이미지 삽입 완료 후 한 번에 flush
+    Logger.log("✨ 스프레드시트 변경사항 반영 중...");
     SpreadsheetApp.flush();
+    Logger.log("✅ 변경사항 반영 완료");
 
     const endTime = new Date().getTime();
     const totalTime = (endTime - startTime) / 1000;
@@ -287,7 +284,7 @@ function insertImages(images, startCell, settings, positions) {
     Logger.log("=== 종료 ===");
 
     return {
-      success: successCount > 0,
+      success: true,
       completed: successCount,
       failed: failedCount,
       total: images.length,

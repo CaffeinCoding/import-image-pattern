@@ -1832,15 +1832,32 @@
               .withSuccessHandler(function (result) {
                 console.log("🎉 이미지 삽입 결과:", result);
 
+                // ✅ 결과 검증
+                if (!result) {
+                  console.error("❌ Backend에서 결과를 반환하지 않음");
+                  setProgressError("서버 오류: 응답 없음");
+                  alert("오류: 서버에서 응답이 없습니다.");
+                  appState.isProcessing = false;
+                  updateCompleteButtonState();
+                  hideProgress();
+                  return;
+                }
+
                 if (result.success) {
                   // 진행률 업데이트
                   setProgress(100);
 
-                  alert(
+                  // ✅ 방법 2: 스마트 새로고침
+                  // 사용자에게 선택권 제공: 즉시 vs 5초 후
+                  const message =
                     `✅ 이미지 삽입 완료!\n` +
-                      `삽입됨: ${result.completed}개\n` +
-                      `실패: ${result.failed}개`
-                  );
+                    `삽입됨: ${result.completed}개\n` +
+                    `실패: ${result.failed}개\n\n` +
+                    `스프레드시트를 확인하세요!\n\n` +
+                    `5초 후 자동으로 페이지 새로고침됩니다.\n` +
+                    `지금 새로고침하시겠습니까?`;
+
+                  const shouldReloadNow = confirm(message);
 
                   console.log(
                     `✅ 총 ${result.completed}개 이미지 삽입 완료 (실패: ${result.failed})`
@@ -1869,13 +1886,66 @@
                     );
                     console.groupEnd();
                   }
+
+                  // ✅ 사용자 선택에 따른 새로고침
+                  if (shouldReloadNow) {
+                    // 사용자가 "확인"을 클릭: 즉시 새로고침
+                    console.log("🔄 사용자가 즉시 새로고침 선택");
+                    setTimeout(() => {
+                      console.log("✅ 페이지 새로고침 시작...");
+                      window.location.reload();
+                    }, 500);
+                  } else {
+                    // 사용자가 "취소"를 클릭: 5초 후 자동 새로고침
+                    console.log("🔄 5초 후 자동 페이지 새로고침 예약");
+                    console.log(
+                      "💡 팁: 콘솔에서 cancelReload() 실행 시 취소 가능"
+                    );
+
+                    let reloadTimeout = setTimeout(() => {
+                      console.log("✅ 예약된 페이지 새로고침 실행");
+                      window.location.reload();
+                    }, 5000);
+
+                    // 사용자가 원하면 새로고침 취소 가능
+                    window.cancelReload = () => {
+                      clearTimeout(reloadTimeout);
+                      console.log("❌ 자동 새로고침이 취소되었습니다");
+                      appState.images = [];
+                      updateImageList();
+                      appState.isProcessing = false;
+                      updateCompleteButtonState();
+                    };
+
+                    // 카운트다운 표시 (콘솔)
+                    let countdown = 5;
+                    const countdownInterval = setInterval(() => {
+                      countdown--;
+                      if (countdown > 0) {
+                        console.log(`⏳ ${countdown}초 후 새로고침...`);
+                      } else {
+                        clearInterval(countdownInterval);
+                      }
+                    }, 1000);
+                  }
                 } else {
                   // 에러 표시
-                  setProgressError(result.error || "이미지 삽입 실패");
-                  console.error("❌ 이미지 삽입 실패:", result.error);
-                  alert(
-                    "이미지 삽입 실패: " + (result.error || "알 수 없는 오류")
-                  );
+                  const errorMessage = result.error || "이미지 삽입 실패";
+                  setProgressError(errorMessage);
+                  console.error("❌ 이미지 삽입 실패:", errorMessage);
+
+                  // 상세 에러 정보 로깅
+                  if (result.results && Array.isArray(result.results)) {
+                    const failedImages = result.results.filter(
+                      (r) => !r.success
+                    );
+                    console.error(`❌ 실패한 이미지: ${failedImages.length}개`);
+                    failedImages.forEach((r) => {
+                      console.error(`   - [${r.index}] ${r.error}`);
+                    });
+                  }
+
+                  alert("이미지 삽입 실패: " + errorMessage);
                 }
 
                 appState.isProcessing = false;
@@ -1884,8 +1954,14 @@
               })
               .withFailureHandler(function (error) {
                 console.error("❌ Google Apps Script 오류:", error);
-                setProgressError("오류 발생");
-                alert("오류 발생: " + error);
+                console.error("에러 상세 정보:", {
+                  message: error.message,
+                  stack: error.stack,
+                  toString: error.toString(),
+                });
+
+                setProgressError("서버 통신 오류");
+                alert("오류 발생: " + (error.message || error.toString()));
 
                 appState.isProcessing = false;
                 updateCompleteButtonState();
@@ -2269,7 +2345,7 @@
                 // 이미지를 Canvas에 리사이징 그리기
                 ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
 
-                // ✅ Blob으로 변환 (JPEG 형식, 85% 품질)
+                // ✅ Blob으로 변환 (JPEG 형식, 100% 품질)
                 // Google Apps Script는 JPEG를 지원합니다
                 canvas.toBlob(
                   (blob) => {
@@ -2284,7 +2360,7 @@
                     resolve(blob);
                   },
                   "image/jpeg",
-                  0.9 // 품질 85%
+                  1.0 // 품질 100%
                 );
               } catch (e) {
                 reject(new Error(`Canvas 처리 실패: ${e.message}`));
