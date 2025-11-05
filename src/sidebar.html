@@ -732,7 +732,7 @@
           "
         >
           <h1 class="header-title" style="flex: 1; text-align: center">
-            Import Images Pattern
+            Insert Images Pattern
           </h1>
           <button
             id="themeToggle"
@@ -758,7 +758,7 @@
         </button>
         <div class="button-group">
           <button id="cancelBtn" class="btn btn-secondary hidden">취소</button>
-          <button id="completeBtn" class="btn btn-success">완료</button>
+          <button id="completeBtn" class="btn btn-success">적용</button>
         </div>
       </div>
 
@@ -821,13 +821,22 @@
           <!-- 셀 선택 -->
           <div class="form-group">
             <label for="selectedCell">선택된 셀:</label>
-            <input
-              type="text"
-              id="selectedCell"
-              class="form-input"
-              placeholder="셀을 선택해주세요"
-              readonly
-            />
+            <div style="display: flex; gap: 8px">
+              <input
+                type="text"
+                id="selectedCell"
+                class="form-input"
+                placeholder="셀을 선택해주세요"
+                readonly
+              />
+              <button
+                id="selectCellBtn"
+                class="btn btn-primary"
+                onclick="handleSelectCellClick()"
+              >
+                선택
+              </button>
+            </div>
             <small
               style="
                 color: var(--text-secondary);
@@ -835,8 +844,65 @@
                 display: block;
               "
             >
-              스프레드시트에서 셀을 클릭하면 자동으로 반영됩니다.
+              선택 버튼을 누르면 스프레드시트에서 현재 선택한 셀이 반영됩니다.
             </small>
+            <!-- 셀 정보 표시 영역 (추가) -->
+            <div
+              id="cellInfoDisplay"
+              style="
+                margin-top: 12px;
+                padding: 12px;
+                background-color: var(--bg-secondary);
+                border-radius: var(--radius-md);
+                border: 1px solid var(--border-color);
+                display: none;
+              "
+            >
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: 1fr 1fr;
+                  gap: 12px;
+                  font-size: 13px;
+                "
+              >
+                <div>
+                  <span style="color: var(--text-secondary); font-size: 12px"
+                    >행</span
+                  >
+                  <div style="font-weight: 500; margin-top: 4px" id="cellRow">
+                    -
+                  </div>
+                </div>
+                <div>
+                  <span style="color: var(--text-secondary); font-size: 12px"
+                    >열</span
+                  >
+                  <div style="font-weight: 500; margin-top: 4px" id="cellCol">
+                    -
+                  </div>
+                </div>
+                <div>
+                  <span style="color: var(--text-secondary); font-size: 12px"
+                    >너비 (px)</span
+                  >
+                  <div style="font-weight: 500; margin-top: 4px" id="cellWidth">
+                    -
+                  </div>
+                </div>
+                <div>
+                  <span style="color: var(--text-secondary); font-size: 12px"
+                    >높이 (px)</span
+                  >
+                  <div
+                    style="font-weight: 500; margin-top: 4px"
+                    id="cellHeight"
+                  >
+                    -
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- 행/열 개수 -->
@@ -894,25 +960,25 @@
           <!-- 이미지 크기 -->
           <div class="form-row">
             <div class="form-group flex-1">
-              <label for="imageWidth">이미지 너비 (셀):</label>
+              <label for="imageWidth">이미지 너비 (px):</label>
               <input
                 type="number"
                 id="imageWidth"
                 class="form-input"
-                min="0.5"
-                step="0.5"
-                value="1"
+                min="10"
+                step="1"
+                value="117"
               />
             </div>
             <div class="form-group flex-1">
-              <label for="imageHeight">이미지 높이 (셀):</label>
+              <label for="imageHeight">이미지 높이 (px):</label>
               <input
                 type="number"
                 id="imageHeight"
                 class="form-input"
-                min="0.5"
-                step="0.5"
-                value="1"
+                min="10"
+                step="1"
+                value="28"
               />
             </div>
           </div>
@@ -1003,8 +1069,8 @@
           colGap: 0,
         },
         imageSizeSettings: {
-          width: 1,
-          height: 1,
+          width: 117, // 픽셀
+          height: 28, // 픽셀
           maintainRatio: false,
           fitToCell: true,
         },
@@ -1028,7 +1094,6 @@
         loadSettings();
         loadTheme(); // 저장된 테마 로드
         setupEventListeners();
-        setupSelectionListener();
         updateUI();
       }
 
@@ -1158,92 +1223,10 @@
           .addEventListener("change", handleMaintainRatioChange);
       }
 
-      function setupSelectionListener() {
-        // Phase 4: 선택된 셀의 좌표를 실시간으로 반영
-        // 사용자가 스프레드시트에서 셀을 클릭하면 선택된 셀 정보 업데이트
-        setInterval(function () {
-          google.script.run
-            .withSuccessHandler(function (result) {
-              if (result.success) {
-                // 선택된 셀 정보 업데이트
-                if (
-                  !appState.selectedCell ||
-                  appState.selectedCell.row !== result.row ||
-                  appState.selectedCell.col !== result.col
-                ) {
-                  appState.selectedCell = {
-                    row: result.row,
-                    col: result.col,
-                    address: result.address,
-                  };
-                  document.getElementById("selectedCell").value =
-                    result.address;
-
-                  console.log(
-                    `✅ 선택된 셀 변경: ${result.address} (행: ${result.row}, 열: ${result.col})`
-                  );
-
-                  // Phase 8: 추가 - 셀 크기도 함께 읽기
-                  getSelectedCellDimensionsAndUpdate();
-                }
-              }
-            })
-            .getSelectedCellInfo();
-        }, 500); // 0.5초마다 선택 셀 확인
-      }
-
       // 프리뷰 함수들 제거 (더 이상 사용 안 함)
       // triggerPreviewUpdate, triggerImmediatePreviewUpdate, updatePreview 제거됨
 
-      // ============ NEW: 셀 표시 기능 ============
-
-      /**
-       * 선택된 셀의 정보 표시
-       */
-      function updateSelectedCell() {
-        google.script.run
-          .withSuccessHandler(function (result) {
-            if (result.success) {
-              appState.selectedCell = {
-                row: result.row,
-                col: result.col,
-                address: result.address,
-              };
-              document.getElementById("selectedCell").value = result.address;
-
-              console.log(
-                `✅ 선택된 셀: ${result.address} (${result.row}, ${result.col})`
-              );
-            }
-          })
-          .getSelectedCellInfo();
-      }
-
-      /**
-       * Phase 8: 선택된 셀의 크기를 읽고 appState에 저장
-       */
-      function getSelectedCellDimensionsAndUpdate() {
-        google.script.run
-          .withSuccessHandler(function (result) {
-            if (result.success) {
-              appState.selectedCellDimensions = {
-                width: result.width,
-                height: result.height,
-              };
-              console.log(
-                `✅ 셀 크기 읽음: ${result.width}x${
-                  result.height
-                }px (타입: ${typeof result.width})`
-              );
-            } else {
-              console.warn("⚠️ 셀 크기 읽기 실패");
-            }
-          })
-          .withFailureHandler(function (error) {
-            console.error(`❌ 셀 크기 읽기 오류: ${error}`);
-          })
-          .getSelectedCellDimensions();
-      }
+      // ============ 셀 선택 기능 ============
 
       /* ======================
    File Upload & Image Management
@@ -1327,10 +1310,8 @@
           const li = document.createElement("li");
           li.className = "image-item";
 
-          // 파일 크기 포맷팅 (KB 단위)
           const fileSizeKB = image.size ? (image.size / 1024).toFixed(1) : "?";
 
-          // 썸네일 이미지 생성
           const thumbnailHtml = image.data
             ? `<img src="${image.data}" alt="${image.name}" class="image-thumbnail" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;" />`
             : `<div style="width: 50px; height: 50px; background: #e0e0e0; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 24px;">🖼️</div>`;
@@ -1358,28 +1339,26 @@
             </div>
           `;
 
-          // 드래그 가능하게 설정
           li.draggable = true;
           li.dataset.index = index;
           li.dataset.imageId = image.id;
 
-          // 드래그 이벤트
+          // 드래그 이벤트 (메모리 누수 방지: 클로저로 index 캡처)
           li.addEventListener("dragstart", (e) => {
             e.dataTransfer.effectAllowed = "move";
-            e.dataTransfer.setData("text/plain", index);
+            e.dataTransfer.setData("text/plain", index.toString());
             li.style.opacity = "0.5";
             console.log(`🔄 드래그 시작: index=${index}, 이미지=${image.name}`);
           });
 
           li.addEventListener("dragend", (e) => {
             li.style.opacity = "1";
-            console.log(`🔄 드래그 종료`);
           });
 
           li.addEventListener("dragover", (e) => {
             e.preventDefault();
             e.dataTransfer.dropEffect = "move";
-            li.style.borderTop = "2px solid var(--button-bg)";
+            li.style.borderTop = "2px solid var(--color-primary)";
           });
 
           li.addEventListener("dragleave", (e) => {
@@ -1390,37 +1369,30 @@
             e.preventDefault();
             e.stopPropagation();
 
-            // 🚨 Emergency Fix: 드래그 앤 드롭 상세 로그
-            const draggedIndex = parseInt(e.dataTransfer.getData("text/plain"));
+            const draggedIndexStr = e.dataTransfer.getData("text/plain");
+            const draggedIndex = parseInt(draggedIndexStr);
             const targetIndex = index;
 
             console.log(`🔄 드롭 이벤트: ${draggedIndex} → ${targetIndex}`);
-            console.log(`📦 현재 이미지 배열 길이: ${appState.images.length}`);
 
             if (isNaN(draggedIndex)) {
-              console.error("❌ draggedIndex가 NaN입니다!");
+              console.error("❌ draggedIndex 파싱 실패");
               li.style.borderTop = "none";
               return;
             }
 
-            if (draggedIndex !== targetIndex) {
-              // 이미지 배열 순서 변경
+            if (
+              draggedIndex !== targetIndex &&
+              draggedIndex < appState.images.length
+            ) {
               const [movedImage] = appState.images.splice(draggedIndex, 1);
               appState.images.splice(targetIndex, 0, movedImage);
               console.log(
-                `✅ 이미지 순서 변경 완료: ${draggedIndex} → ${targetIndex}`
-              );
-              console.log(
-                `📦 변경 후 이미지 이름:`,
-                appState.images.map((img) => img.name)
+                `✅ 이미지 순서 변경: ${draggedIndex} → ${targetIndex}`
               );
 
-              // UI 업데이트
               updateImageList();
-              // localStorage에 저장
               saveSettings();
-            } else {
-              console.log("⚠️ 같은 위치로 드롭 (순서 변경 안 함)");
             }
 
             li.style.borderTop = "none";
@@ -1429,7 +1401,6 @@
           imageList.appendChild(li);
         });
 
-        // 드래그앤드롭 영역 설정
         setupImageDropZone();
         updateCompleteButtonState();
       }
@@ -1472,25 +1443,6 @@
       /* ======================
    Settings Management
    ====================== */
-
-      function updateSelectedCell() {
-        google.script.run
-          .withSuccessHandler(function (result) {
-            if (result.success) {
-              appState.selectedCell = {
-                row: result.row,
-                col: result.col,
-                address: result.address,
-              };
-              document.getElementById("selectedCell").value = result.address;
-
-              console.log(
-                `✅ 선택된 셀: ${result.address} (${result.row}, ${result.col})`
-              );
-            }
-          })
-          .getSelectedCellInfo();
-      }
 
       function debounceSettingChange() {
         clearTimeout(debounceTimer);
@@ -1726,7 +1678,6 @@
           return;
         }
 
-        // ✅ Phase 8 추가: 디버그 정보 출력
         console.log("=== 🔍 이미지 삽입 전 상태 ===");
         console.log(
           `선택 셀 크기: ${appState.selectedCellDimensions?.width}x${appState.selectedCellDimensions?.height}px`
@@ -1734,16 +1685,15 @@
         console.log(`이미지 설정:`, appState.imageSizeSettings);
         console.log(`이미지 개수: ${appState.images.length}`);
 
-        // 각 이미지의 예상 크기 계산
         appState.images.forEach((img, idx) => {
           const size = calculateImageSize(img);
           console.log(
-            `📷 이미지 ${idx}: ${img.name} → 크기: ${size.width}x${size.height}px (1x1이면 셀 크기 사용)`
+            `📷 이미지 ${idx}: ${img.name} → 크기: ${size.width}x${size.height}px`
           );
         });
         console.log("=== 종료 ===\n");
 
-        // ✅ Critical Fix #1: "셀 크기에 맞춤"일 때 크기 재확인
+        // 셀 크기에 맞춤 모드에서 크기 미확인 시 재확인
         if (appState.imageSizeSettings.fitToCell) {
           if (
             !appState.selectedCellDimensions ||
@@ -1751,7 +1701,6 @@
           ) {
             console.warn("⚠️ 셀 크기 미확인 → 재확인 시작");
 
-            // 비동기 호출 후 완료되면 실제 삽입 실행
             google.script.run
               .withSuccessHandler(function (result) {
                 if (result.success) {
@@ -1760,26 +1709,23 @@
                     height: result.height,
                   };
                   console.log(
-                    `✅ 셀 크기 재확인 완료: ${result.width}x${result.height}px`
+                    `✅ 셀 크기 재확인: ${result.width}x${result.height}px`
                   );
-
-                  // 크기 확인 후 실제 삽입 실행
                   proceedWithImageInsertion(validation);
                 } else {
-                  alert("셀 크기를 읽을 수 없습니다. 다시 시도해주세요.");
+                  alert("셀 크기를 읽을 수 없습니다.");
                 }
               })
               .withFailureHandler(function (error) {
                 console.error(`❌ 셀 크기 읽기 실패: ${error}`);
-                alert("셀 크기를 읽는 중 오류가 발생했습니다.");
+                alert("셀 크기 읽기 중 오류 발생");
               })
               .getSelectedCellDimensions();
 
-            return; // 여기서 일단 중단
+            return;
           }
         }
 
-        // 크기가 이미 있으면 바로 실행
         proceedWithImageInsertion(validation);
       }
 
@@ -1791,14 +1737,6 @@
         const positions = validation.positions || calculateLayoutPositions();
 
         console.log("📍 이미지 삽입 시작");
-
-        // Phase 2: 배치 검증
-        // const validation = validateLayoutAndImages(); // 이미 위에서 했으므로 중복 제거
-
-        // if (!validation.valid) {
-        //   alert(validation.error);
-        //   return;
-        // }
 
         console.log(validation.message);
         logImagePlacementInfo();
@@ -1817,63 +1755,158 @@
         updateCompleteButtonState();
         showProgress();
 
-        // 이미지 데이터 정제 (data URL만 추출)
-        const imageDataArray = appState.images.map((img) => ({
-          data: img.data, // Data URL 문자열
-        }));
+        // ✅ Option 2 & Option 3: 병렬 리사이징 (Blob + WebP)
+        console.log("🖼️  이미지 리사이징 시작 (병렬 처리)...");
+        const startResizeTime = performance.now();
+        let resizeTime = 0; // ✅ 외부 스코프에 저장
 
-        // Phase 6: 실제 이미지 삽입 로직
-        console.log("✅ Backend에 이미지 삽입 요청:", {
-          cellLocation: appState.selectedCell,
-          imageCount: imageDataArray.length,
-          settings: appState.patternSettings,
-          positions: positions,
+        // 각 이미지별 최종 크기 계산
+        const resizePromises = appState.images.map((img, index) => {
+          const imageSize = calculateImageSize(img);
+          console.log(
+            `📐 리사이징 준비 [${index}]: ${img.name} → ${imageSize.width}x${imageSize.height}px`
+          );
+
+          // Promise.all()로 병렬 처리하기 위해 Promise 반환
+          return resizeImageToBlob(img.data, imageSize.width, imageSize.height)
+            .then((webpBlob) => {
+              console.log(
+                `✅ 리사이징 완료 [${index}]: ${img.name} (${(
+                  webpBlob.size / 1024
+                ).toFixed(2)}KB)`
+              );
+              return {
+                index: index,
+                blob: webpBlob,
+                width: imageSize.width,
+                height: imageSize.height,
+                mimeType: "image/jpeg", // ✅ WebP → JPEG로 변경
+              };
+            })
+            .catch((error) => {
+              console.error(`❌ 리사이징 실패 [${index}]: ${error.message}`);
+              throw error;
+            });
         });
 
-        // Backend 함수 호출
-        google.script.run
-          .withSuccessHandler(function (result) {
-            console.log("🎉 이미지 삽입 결과:", result);
+        // ✅ 모든 이미지를 병렬로 리사이징
+        Promise.all(resizePromises)
+          .then(async (resizedImages) => {
+            resizeTime = performance.now() - startResizeTime; // ✅ 외부 변수에 저장
+            console.log(
+              `✅ 모든 이미지 리사이징 완료: ${(resizeTime / 1000).toFixed(
+                2
+              )}초`
+            );
 
-            if (result.success) {
-              // 진행률 업데이트
-              setProgress(100);
+            // Blob을 Base64로 변환 (Google Apps Script 전송용)
+            console.log("🔄 Blob을 Base64로 변환 중...");
+            const base64Promises = resizedImages.map((resized) =>
+              blobToBase64(resized.blob).then((base64String) => {
+                console.log(
+                  `✅ Base64 변환 [${resized.index}]: ${(
+                    base64String.length / 1024
+                  ).toFixed(2)}KB`
+                );
+                return {
+                  index: resized.index,
+                  data: base64String,
+                  mimeType: resized.mimeType,
+                  width: resized.width,
+                  height: resized.height,
+                };
+              })
+            );
 
-              alert(
-                `✅ 이미지 삽입 완료!\n` +
-                  `삽입됨: ${result.completed}개\n` +
-                  `실패: ${result.failed}개`
+            const imageDataArray = await Promise.all(base64Promises);
+
+            console.log("✅ Backend에 이미지 삽입 요청:", {
+              cellLocation: appState.selectedCell,
+              imageCount: imageDataArray.length,
+              settings: appState.patternSettings,
+              positions: positions,
+            });
+
+            // Backend 함수 호출
+            google.script.run
+              .withSuccessHandler(function (result) {
+                console.log("🎉 이미지 삽입 결과:", result);
+
+                if (result.success) {
+                  // 진행률 업데이트
+                  setProgress(100);
+
+                  alert(
+                    `✅ 이미지 삽입 완료!\n` +
+                      `삽입됨: ${result.completed}개\n` +
+                      `실패: ${result.failed}개`
+                  );
+
+                  console.log(
+                    `✅ 총 ${result.completed}개 이미지 삽입 완료 (실패: ${result.failed})`
+                  );
+
+                  // ✅ 성능 정보 출력 (resizeTime 사용 가능)
+                  if (result.processingTimeSeconds) {
+                    console.group("📊 성능 분석");
+                    console.log(
+                      `클라이언트 리사이징: ${(resizeTime / 1000).toFixed(2)}초`
+                    );
+                    console.log(
+                      `Backend 처리: ${result.processingTimeSeconds}초`
+                    );
+                    console.log(
+                      `총 시간: ${(
+                        resizeTime / 1000 +
+                        result.processingTimeSeconds
+                      ).toFixed(2)}초`
+                    );
+                    console.log(
+                      `이미지당 평균: ${(
+                        (resizeTime / 1000 + result.processingTimeSeconds) /
+                        result.completed
+                      ).toFixed(2)}초`
+                    );
+                    console.groupEnd();
+                  }
+                } else {
+                  // 에러 표시
+                  setProgressError(result.error || "이미지 삽입 실패");
+                  console.error("❌ 이미지 삽입 실패:", result.error);
+                  alert(
+                    "이미지 삽입 실패: " + (result.error || "알 수 없는 오류")
+                  );
+                }
+
+                appState.isProcessing = false;
+                updateCompleteButtonState();
+                hideProgress();
+              })
+              .withFailureHandler(function (error) {
+                console.error("❌ Google Apps Script 오류:", error);
+                setProgressError("오류 발생");
+                alert("오류 발생: " + error);
+
+                appState.isProcessing = false;
+                updateCompleteButtonState();
+                hideProgress();
+              })
+              .insertImages(
+                imageDataArray,
+                appState.selectedCell,
+                appState.patternSettings,
+                positions
               );
-
-              console.log(
-                `✅ 총 ${result.completed}개 이미지 삽입 완료 (실패: ${result.failed})`
-              );
-            } else {
-              // 에러 표시
-              setProgressError(result.error || "이미지 삽입 실패");
-              console.error("❌ 이미지 삽입 실패:", result.error);
-              alert("이미지 삽입 실패: " + (result.error || "알 수 없는 오류"));
-            }
+          })
+          .catch((error) => {
+            console.error("❌ 이미지 리사이징 중 오류:", error);
+            setProgressError(error.message || "이미지 처리 중 오류 발생");
+            alert("이미지 처리 중 오류가 발생했습니다: " + error.message);
 
             appState.isProcessing = false;
             updateCompleteButtonState();
             hideProgress();
-          })
-          .withFailureHandler(function (error) {
-            console.error("❌ Google Apps Script 오류:", error);
-            setProgressError("오류 발생");
-            alert("오류 발생: " + error);
-
-            appState.isProcessing = false;
-            updateCompleteButtonState();
-            hideProgress();
-          })
-          .insertImages(
-            imageDataArray,
-            appState.selectedCell,
-            appState.patternSettings,
-            positions
-          );
+          });
       }
 
       function handleCancelClick() {
@@ -1911,7 +1944,7 @@
           completeBtn.classList.add("btn-success");
           cancelBtn.classList.remove("hidden");
         } else {
-          completeBtn.textContent = "완료";
+          completeBtn.textContent = "적용";
           completeBtn.classList.remove("hidden");
           cancelBtn.classList.add("hidden");
         }
@@ -2201,81 +2234,173 @@
    ====================== */
 
       /**
+       * 이미지를 Canvas에서 Blob으로 리사이징 (JPEG 형식)
+       * @param {string} originalDataUrl - 원본 이미지 데이터URL
+       * @param {number} targetWidth - 목표 너비 (픽셀)
+       * @param {number} targetHeight - 목표 높이 (픽셀)
+       * @returns {Promise<Blob>} 리사이징된 JPEG Blob
+       */
+      async function resizeImageToBlob(
+        originalDataUrl,
+        targetWidth,
+        targetHeight
+      ) {
+        return new Promise((resolve, reject) => {
+          try {
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+
+            img.onload = () => {
+              try {
+                // Canvas 생성 및 컨텍스트 획득
+                const canvas = document.createElement("canvas");
+                canvas.width = targetWidth;
+                canvas.height = targetHeight;
+
+                const ctx = canvas.getContext("2d");
+                if (!ctx) {
+                  throw new Error("Canvas context를 생성할 수 없습니다");
+                }
+
+                // 배경 설정 (흰색 배경 - JPEG는 투명도 미지원)
+                ctx.fillStyle = "#ffffff";
+                ctx.fillRect(0, 0, targetWidth, targetHeight);
+
+                // 이미지를 Canvas에 리사이징 그리기
+                ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+
+                // ✅ Blob으로 변환 (JPEG 형식, 85% 품질)
+                // Google Apps Script는 JPEG를 지원합니다
+                canvas.toBlob(
+                  (blob) => {
+                    if (!blob) {
+                      throw new Error("Blob 생성 실패");
+                    }
+                    console.log(
+                      `✅ JPEG Blob 생성: ${blob.size}B (${(
+                        blob.size / 1024
+                      ).toFixed(2)}KB)`
+                    );
+                    resolve(blob);
+                  },
+                  "image/jpeg",
+                  0.9 // 품질 85%
+                );
+              } catch (e) {
+                reject(new Error(`Canvas 처리 실패: ${e.message}`));
+              }
+            };
+
+            img.onerror = () => {
+              reject(new Error("이미지 로드 실패"));
+            };
+
+            img.src = originalDataUrl;
+          } catch (e) {
+            reject(e);
+          }
+        });
+      }
+
+      /**
+       * Blob을 Base64로 변환
+       * @param {Blob} blob - 변환할 Blob
+       * @returns {Promise<string>} Base64 문자열
+       */
+      async function blobToBase64(blob) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            try {
+              const result = reader.result;
+              // data:image/webp;base64, 제거
+              const base64String = result.split(",")[1];
+              resolve(base64String);
+            } catch (e) {
+              reject(e);
+            }
+          };
+          reader.onerror = () => reject(new Error("Blob 읽기 실패"));
+          reader.readAsDataURL(blob);
+        });
+      }
+
+      /**
        * 이미지 크기 계산 함수
        * 선택된 설정에 따라 최종 이미지 크기를 계산합니다.
+       * @returns {Object} {width: number, height: number} 픽셀 단위
        */
       function calculateImageSize(imageMetadata) {
         const settings = appState.imageSizeSettings;
-        let result = { width: 1, height: 1 };
+        let result = { width: 117, height: 28 }; // 기본값 (픽셀)
 
-        // 이미지 원본 비율
         const originalRatio = imageMetadata
           ? imageMetadata.width / imageMetadata.height
           : 1;
 
         if (settings.fitToCell) {
-          // Phase 8: 셀 크기에 맞춤 - Frontend에서 미리 읽은 크기 사용
+          // 셀 크기에 맞춤: Frontend에서 미리 읽은 크기 사용 (픽셀)
           if (
             appState.selectedCellDimensions &&
             appState.selectedCellDimensions.width > 0
           ) {
-            // 방안 B: Frontend에서 미리 읽은 크기 사용 (성능 최적)
             result = {
               width: appState.selectedCellDimensions.width,
               height: appState.selectedCellDimensions.height,
             };
             console.log(
-              `✅ 크기 계산: 셀 크기에 맞춤 (Frontend에서 읽음) ${result.width}x${result.height}px`
+              `✅ [셀 크기에 맞춤] 이미지 크기: ${result.width}px × ${result.height}px`
+            );
+            console.log(
+              `   원본 이미지: ${imageMetadata?.width || "?"}px × ${
+                imageMetadata?.height || "?"
+              }px`
             );
           } else {
-            // Fallback: 1x1 신호로 Backend에서 처리 (방안 C)
-            result = { width: 1, height: 1 };
+            // Fallback: 기본 셀 크기 사용
+            result = { width: 117, height: 28 };
             console.warn(
-              "⚠️ 셀 크기 미리 로드 안 됨 → Backend에서 처리 (1x1 신호)"
+              "⚠️ [셀 크기에 맞춤] 셀 크기 미로드 → 기본 크기 사용 (117×28px)"
             );
+            console.warn("   셀 정보:", appState.selectedCellDimensions);
           }
         } else if (
           settings.maintainRatio &&
           imageMetadata &&
           imageMetadata.width > 0
         ) {
-          // 비율 유지 모드 - 픽셀 단위 입력
-          const width =
+          // 비율 유지 모드 (픽셀 단위 직접 입력)
+          const widthPx =
             parseFloat(document.getElementById("imageWidth").value) || 0;
-          const height =
+          const heightPx =
             parseFloat(document.getElementById("imageHeight").value) || 0;
 
-          if (width && !height) {
-            // 케이스 1: 비율 유지, 너비만 지정 (픽셀)
-            result.width = width;
-            result.height = Math.round((width / originalRatio) * 10) / 10;
-            console.log(
-              `✅ 크기 계산: 너비 ${width}px → 높이 ${result.height}px (비율 유지)`
-            );
-          } else if (height && !width) {
-            // 케이스 2: 비율 유지, 높이만 지정 (픽셀)
-            result.height = height;
-            result.width = Math.round(height * originalRatio * 10) / 10;
-            console.log(
-              `✅ 크기 계산: 높이 ${height}px → 너비 ${result.width}px (비율 유지)`
-            );
-          } else if (width && height) {
-            // 케이스 3: 비율 유지, 둘 다 지정 → 비율 유지 OFF
-            settings.maintainRatio = false;
-            document.getElementById("maintainRatioCheckbox").checked = false;
-            result = { width, height };
-            console.warn(
-              "⚠️ 너비/높이 모두 지정 → 비율 유지 자동 OFF (픽셀 단위)"
-            );
+          if (widthPx && !heightPx) {
+            result.width = widthPx;
+            result.height = Math.round(widthPx / originalRatio);
+          } else if (heightPx && !widthPx) {
+            result.height = heightPx;
+            result.width = Math.round(heightPx * originalRatio);
+          } else if (widthPx && heightPx) {
+            result = { width: widthPx, height: heightPx };
+          } else {
+            result = { width: 117, height: 28 };
           }
+
+          console.log(
+            `✅ 이미지 크기: 비율 유지 ${result.width}x${result.height}px`
+          );
         } else {
-          // 자유 크기 - 픽셀 단위 입력
-          const width =
-            parseFloat(document.getElementById("imageWidth").value) || 1;
-          const height =
-            parseFloat(document.getElementById("imageHeight").value) || 1;
-          result = { width, height };
-          console.log(`✅ 크기 계산: 자유 크기 ${width}x${height}px (픽셀)`);
+          // 자유 크기 모드 (픽셀 단위 직접 입력)
+          const widthPx =
+            parseFloat(document.getElementById("imageWidth").value) || 117;
+          const heightPx =
+            parseFloat(document.getElementById("imageHeight").value) || 28;
+
+          result = { width: widthPx, height: heightPx };
+          console.log(
+            `✅ 이미지 크기: 자유 크기 ${result.width}x${result.height}px`
+          );
         }
 
         return result;
@@ -2338,24 +2463,37 @@
           };
         }
 
-        // 배치 설정 검증
-        const layoutSettings = {
-          startRow: appState.selectedCell.row,
-          startCol: appState.selectedCell.col,
-          rows: appState.patternSettings.rows,
-          cols: appState.patternSettings.cols,
-          rowGap: appState.patternSettings.rowGap,
-          colGap: appState.patternSettings.colGap,
-          inactiveCells: appState.inactiveCells,
-        };
+        // ✅ 프론트엔드에서 직접 검증 (백엔드 호출 제거)
+        const { rows, cols, rowGap, colGap } = appState.patternSettings;
 
-        // Google Apps Script에서 검증
-        let validationResult = { valid: true };
-        google.script.run
-          .withSuccessHandler(function (result) {
-            validationResult = result;
-          })
-          .validateLayoutSettings(layoutSettings);
+        // 범위 검증
+        if (!rows || rows < 1 || rows > 50) {
+          return {
+            valid: false,
+            error: "행 개수는 1~50 사이여야 합니다.",
+          };
+        }
+
+        if (!cols || cols < 1 || cols > 50) {
+          return {
+            valid: false,
+            error: "열 개수는 1~50 사이여야 합니다.",
+          };
+        }
+
+        if (rowGap < 0 || rowGap > 20) {
+          return {
+            valid: false,
+            error: "행 간격은 0~20 사이여야 합니다.",
+          };
+        }
+
+        if (colGap < 0 || colGap > 20) {
+          return {
+            valid: false,
+            error: "열 간격은 0~20 사이여야 합니다.",
+          };
+        }
 
         // 배치 가능한 셀 개수 확인
         const positions = calculateLayoutPositions();
@@ -2366,7 +2504,7 @@
           `배치 분석: 사용 가능한 셀 ${availableCells}개, 이미지 ${imageCount}개`
         );
 
-        if (validationResult.valid && availableCells > 0) {
+        if (availableCells > 0) {
           return {
             valid: true,
             positions: positions,
@@ -2375,9 +2513,7 @@
         } else {
           return {
             valid: false,
-            error:
-              validationResult.errors?.join(", ") ||
-              "배치 설정이 유효하지 않습니다.",
+            error: "배치 가능한 셀이 없습니다.",
           };
         }
       }
@@ -2405,6 +2541,167 @@
       }
 
       console.log("Sidebar initialized");
+
+      /**
+       * 선택된 셀 정보를 UI에 업데이트
+       */
+      function updateSelectedCell() {
+        const selectedCellInput = document.getElementById("selectedCell");
+
+        if (appState.selectedCell && appState.selectedCell.address) {
+          selectedCellInput.value = appState.selectedCell.address;
+
+          // 셀 정보 표시 (크기 정보가 있는 경우)
+          if (
+            appState.selectedCellDimensions &&
+            appState.selectedCellDimensions.width > 0
+          ) {
+            displayCellInfo(
+              appState.selectedCell.row,
+              appState.selectedCell.col,
+              appState.selectedCellDimensions.width,
+              appState.selectedCellDimensions.height
+            );
+          }
+        } else {
+          selectedCellInput.value = "";
+          // 셀 정보 표시 영역 숨기기
+          const cellInfoDisplay = document.getElementById("cellInfoDisplay");
+          if (cellInfoDisplay) {
+            cellInfoDisplay.style.display = "none";
+          }
+        }
+      }
+
+      /**
+       * 선택 버튼으로 현재 선택된 셀 정보 업데이트
+       */
+      function handleSelectCellClick() {
+        const selectBtn = document.getElementById("selectCellBtn");
+        selectBtn.disabled = true;
+        selectBtn.textContent = "읽는 중...";
+
+        google.script.run
+          .withSuccessHandler(function (result) {
+            if (result.success) {
+              // 선택된 셀 정보 업데이트
+              appState.selectedCell = {
+                row: result.row,
+                col: result.col,
+                address: result.address,
+              };
+              document.getElementById("selectedCell").value = result.address;
+
+              console.log(
+                `✅ 선택 버튼으로 셀 선택: ${result.address} (행: ${result.row}, 열: ${result.col})`
+              );
+
+              // 셀 크기 정보도 함께 읽기
+              google.script.run
+                .withSuccessHandler(function (dimResult) {
+                  selectBtn.disabled = false;
+                  selectBtn.textContent = "선택";
+
+                  if (dimResult && dimResult.success) {
+                    // 셀 크기 정보 저장
+                    appState.selectedCellDimensions = {
+                      width: dimResult.width,
+                      height: dimResult.height,
+                    };
+
+                    // UI에 정보 표시
+                    displayCellInfo(
+                      result.row,
+                      result.col,
+                      dimResult.width,
+                      dimResult.height
+                    );
+
+                    console.log(
+                      `✅ 셀 정보 완전 수집: ${result.address} (크기: ${dimResult.width}x${dimResult.height}px)`
+                    );
+
+                    // 완료 버튼 상태 업데이트
+                    updateCompleteButtonState();
+                  } else {
+                    const errorMsg =
+                      dimResult && dimResult.error
+                        ? dimResult.error
+                        : "알 수 없는 오류";
+                    console.warn(`⚠️ 셀 크기 읽기 실패: ${errorMsg}`);
+                    displayCellInfo(result.row, result.col, null, null);
+                    alert(`셀 크기 읽기에 실패했습니다.\n오류: ${errorMsg}`);
+                  }
+                })
+                .withFailureHandler(function (error) {
+                  selectBtn.disabled = false;
+                  selectBtn.textContent = "선택";
+                  console.error(`❌ 셀 크기 읽기 오류: ${error}`);
+                  displayCellInfo(result.row, result.col, null, null);
+                  alert(`셀 크기 읽기 중 오류가 발생했습니다.\n${error}`);
+                })
+                .getSelectedCellDimensions();
+            } else {
+              selectBtn.disabled = false;
+              selectBtn.textContent = "선택";
+              const errorMsg = result.error || "알 수 없는 오류";
+              console.error(`❌ 선택된 셀이 없습니다: ${errorMsg}`);
+              alert("셀을 선택한 후 버튼을 눌러주세요.");
+            }
+          })
+          .withFailureHandler(function (error) {
+            selectBtn.disabled = false;
+            selectBtn.textContent = "선택";
+            console.error(`❌ 셀 정보 읽기 오류: ${error}`);
+            alert(`셀 정보를 읽는 중 오류가 발생했습니다.\n${error}`);
+          })
+          .getSelectedCellInfo();
+      }
+
+      /**
+       * 선택된 셀 정보를 UI에 표시
+       * @param {number} row - 행 번호
+       * @param {number} col - 열 번호
+       * @param {number|null} width - 너비 (픽셀)
+       * @param {number|null} height - 높이 (픽셀)
+       */
+      function displayCellInfo(row, col, width, height) {
+        try {
+          const cellInfoDisplay = document.getElementById("cellInfoDisplay");
+          const cellRow = document.getElementById("cellRow");
+          const cellCol = document.getElementById("cellCol");
+          const cellWidth = document.getElementById("cellWidth");
+          const cellHeight = document.getElementById("cellHeight");
+
+          if (
+            !cellInfoDisplay ||
+            !cellRow ||
+            !cellCol ||
+            !cellWidth ||
+            !cellHeight
+          ) {
+            console.error("❌ 셀 정보 표시 요소를 찾을 수 없습니다.");
+            return;
+          }
+
+          // 정보 표시
+          cellRow.textContent = row || "-";
+          cellCol.textContent = col || "-";
+          cellWidth.textContent = width && width > 0 ? `${width}px` : "-";
+          cellHeight.textContent = height && height > 0 ? `${height}px` : "-";
+
+          // 정보 표시 영역 보이기
+          cellInfoDisplay.style.display = "block";
+
+          console.log(
+            `📊 셀 정보 표시 업데이트: (${row}, ${col}) - ${
+              width ? width + "px" : "-"
+            }x${height ? height + "px" : "-"}`
+          );
+        } catch (e) {
+          console.error(`❌ 셀 정보 표시 중 오류: ${e.message}`);
+        }
+      }
     </script>
   </body>
 </html>
