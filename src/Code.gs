@@ -194,9 +194,53 @@ function setCellBackgroundColors(cells, color) {
  */
 function undoLastAction() {
   try {
-    SpreadsheetApp.getActiveSpreadsheet().undo();
-    return { success: true };
+    const userProperties = PropertiesService.getUserProperties();
+    const lastIdsJson = userProperties.getProperty("lastInsertedImageIds");
+
+    if (!lastIdsJson) {
+      // 실행 취소할 작업이 없으면 내장 undo 시도
+      SpreadsheetApp.getActiveSpreadsheet().undo();
+      return {
+        success: true,
+        message: "No custom action to undo. Tried native undo.",
+      };
+    }
+
+    const imageIds = JSON.parse(lastIdsJson);
+    const sheet = SpreadsheetApp.getActiveSheet();
+    const allImages = sheet.getImages();
+    let removedCount = 0;
+
+    allImages.forEach((image) => {
+      const anchorCell = image.getAnchorCell();
+      const row = anchorCell.getRow();
+      const col = anchorCell.getColumn();
+
+      // ID 형식: 'image-pattern-행-열-타임스탬프'
+      const imageIdPrefix = `image-pattern-${row}-${col}`;
+
+      // 저장된 ID 목록에서 해당 위치로 시작하는 ID가 있는지 확인
+      const match = imageIds.find((id) => id.startsWith(imageIdPrefix));
+
+      if (match) {
+        image.remove();
+        removedCount++;
+
+        // 한 번 사용된 ID는 목록에서 제거하여 중복 삭제 방지
+        const indexToRemove = imageIds.indexOf(match);
+        if (indexToRemove > -1) {
+          imageIds.splice(indexToRemove, 1);
+        }
+      }
+    });
+
+    // 처리 후 저장된 ID 삭제
+    userProperties.deleteProperty("lastInsertedImageIds");
+
+    Logger.log(`사용자 정의 실행 취소: ${removedCount}개의 이미지 삭제 완료`);
+    return { success: true, message: `${removedCount} images removed.` };
   } catch (e) {
+    Logger.log(`실행 취소 오류: ${e.toString()}`);
     return { success: false, error: e.toString() };
   }
 }
@@ -209,6 +253,7 @@ function insertImages(images, startCell, settings, positions) {
     const sheet = SpreadsheetApp.getActiveSheet();
     const results = [];
     let successCount = 0;
+    const insertedImageIds = []; // 삽입된 이미지 ID를 저장할 배열
 
     const startTime = new Date().getTime();
     Logger.log(
@@ -232,6 +277,11 @@ function insertImages(images, startCell, settings, positions) {
           position.width,
           position.height
         );
+
+        // 성공 시 이미지 ID 저장
+        if (response.success && response.id) {
+          insertedImageIds.push(response.id);
+        }
 
         successCount++;
         results.push({
@@ -267,6 +317,15 @@ function insertImages(images, startCell, settings, positions) {
           };
         }
       }
+    }
+
+    // 세션 속성에 이미지 ID 목록 저장
+    if (insertedImageIds.length > 0) {
+      const userProperties = PropertiesService.getUserProperties();
+      userProperties.setProperty(
+        "lastInsertedImageIds",
+        JSON.stringify(insertedImageIds)
+      );
     }
 
     const failedCount = results.filter((r) => !r.success).length;
@@ -386,13 +445,16 @@ function insertImageAtCell(
     image.setWidth(width);
     image.setHeight(height);
 
+    // ✅ 이미지 위치를 기반으로 고유 ID 생성
+    const uniqueId = `image-pattern-${row}-${col}-${new Date().getTime()}`;
+
     Logger.log(
       `✅ [삽입 완료] (${row}, ${col}) - 형식: ${fileExt} | 크기: ${width}px × ${height}px`
     );
 
     return {
       success: true,
-      image: image,
+      id: uniqueId, // ✅ 위치 기반 고유 ID 반환
       position: { row, col, width, height },
     };
   } catch (e) {

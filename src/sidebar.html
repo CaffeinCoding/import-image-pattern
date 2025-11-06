@@ -1051,6 +1051,7 @@
         version: "importImagePattern:version",
         listExpanded: "importImagePattern:listExpanded",
         presets: "importImagePattern:presets",
+        insertionState: "importImagePattern:insertionState",
       };
 
       const DEBOUNCE_DELAY = 500;
@@ -1696,10 +1697,11 @@
           for (let c = 0; c < cols; c++) {
             const isInactive = appState.inactiveCells[r][c];
             const classNames = `inactive-cell ${isInactive ? "active" : ""}`;
+            const cellIndex = r * cols + c + 1;
 
             cellHTML += `
         <div class="${classNames}" onclick="toggleInactiveCell(${r}, ${c})">
-          ${r}:${c}
+          ${cellIndex}
         </div>
       `;
           }
@@ -1786,6 +1788,18 @@
    ====================== */
 
       function handleCompleteClick() {
+        if (appState.isProcessing) {
+          // "저장" 버튼 클릭 시
+          appState.images = [];
+          updateImageList();
+          appState.isProcessing = false;
+          updateCompleteButtonState();
+          localStorage.removeItem(STORAGE_KEYS.insertionState);
+          alert("저장되었습니다. 이미지 목록이 초기화됩니다.");
+          return;
+        }
+
+        // "적용" 버튼 클릭 시
         // 유효성 검증
         const validation = validateLayoutAndImages();
         if (!validation.valid) {
@@ -1999,6 +2013,7 @@
                     console.groupEnd();
                   }
 
+                  localStorage.setItem(STORAGE_KEYS.insertionState, "true");
                   // ✅ 진행률만 숨기기 (설정값은 유지)
                   hideProgress();
                   console.log("✅ 진행률 표시 숨김");
@@ -2020,11 +2035,10 @@
                   }
 
                   alert("이미지 삽입 실패: " + errorMessage);
+                  appState.isProcessing = false;
+                  updateCompleteButtonState();
+                  hideProgress();
                 }
-
-                appState.isProcessing = false;
-                updateCompleteButtonState();
-                hideProgress();
               })
               .withFailureHandler(function (error) {
                 console.error("❌ Google Apps Script 오류:", error);
@@ -2063,7 +2077,7 @@
         console.log("⚠️ 작업 취소 버튼 클릭");
 
         if (appState.isProcessing) {
-          const confirmed = confirm("진행 중인 작업을 취소하시겠습니까?");
+          const confirmed = confirm("이미지 삽입 작업을 취소하시겠습니까?");
           if (!confirmed) {
             return;
           }
@@ -2072,17 +2086,18 @@
           google.script.run
             .withSuccessHandler(function (result) {
               console.log("✅ Undo 완료:", result);
+              localStorage.removeItem(STORAGE_KEYS.insertionState);
+              appState.isProcessing = false;
+              updateCompleteButtonState();
+              hideProgress();
               alert("작업이 취소되었습니다.");
             })
             .withFailureHandler(function (error) {
               console.error("❌ Undo 실패:", error);
+              alert("작업 취소에 실패했습니다.");
             })
             .undoLastAction();
         }
-
-        appState.isProcessing = false;
-        updateCompleteButtonState();
-        hideProgress();
       }
 
       function updateCompleteButtonState() {
@@ -2093,14 +2108,14 @@
           completeBtn.textContent = "💾 저장";
           completeBtn.classList.add("btn-success");
           cancelBtn.classList.remove("hidden");
+          completeBtn.disabled = false; // 저장 상태에서는 항상 활성화
         } else {
           completeBtn.textContent = "적용";
           completeBtn.classList.remove("hidden");
           cancelBtn.classList.add("hidden");
+          completeBtn.disabled =
+            !appState.selectedCell || appState.images.length === 0;
         }
-
-        completeBtn.disabled =
-          !appState.selectedCell || appState.images.length === 0;
       }
 
       /* ======================
@@ -2235,6 +2250,13 @@
           } catch (e) {
             console.error("Settings load error:", e);
           }
+        }
+
+        const insertionState = localStorage.getItem(
+          STORAGE_KEYS.insertionState
+        );
+        if (insertionState === "true") {
+          appState.isProcessing = true;
         }
 
         // 리스트 상태 복구
