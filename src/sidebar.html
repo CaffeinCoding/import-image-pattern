@@ -323,6 +323,201 @@
        */
 
       /* ======================
+   Internationalization (i18n)
+   ====================== */
+
+      const i18n = {
+        ko: {
+          // 헤더
+          title: "Insert Images For Spreadsheet",
+          themeToggleDark: "밝은 모드로 전환",
+          themeToggleLight: "어두운 모드로 전환",
+
+          // 버튼
+          uploadBtn: "📁 이미지 가져오기",
+          apply: "적용",
+          cancel: "취소",
+          save: "💾 저장",
+          select: "선택",
+          selectReading: "읽는 중...",
+          savePreset: "현재 설정 저장",
+          deletePreset: "프리셋 삭제",
+
+          // 라벨 및 섹션
+          importedImages: "가져온 이미지",
+          settings: "설정",
+          preset: "프리셋:",
+          presetSelect: "-- 프리셋 선택 --",
+          presetHelp:
+            "현재 설정을 프리셋으로 저장하거나 저장된 프리셋을 불러올 수 있습니다.",
+          selectedCell: "선택된 셀:",
+          selectCellPlaceholder: "셀을 선택해주세요",
+          selectCellHelp:
+            "선택 버튼을 누르면 스프레드시트에서 현재 선택한 셀이 반영됩니다.",
+          cellInfoRow: "행",
+          cellInfoCol: "열",
+          cellInfoWidth: "너비 (px)",
+          cellInfoHeight: "높이 (px)",
+          rowCount: "행 개수:",
+          colCount: "열 개수:",
+          rowGap: "행 간격:",
+          colGap: "열 간격:",
+          imageWidth: "이미지 너비 (px):",
+          imageHeight: "이미지 높이 (px):",
+
+          // 체크박스
+          fitToCell: "셀의 크기에 맞춤",
+          maintainRatio: "이미지 비율 유지",
+          inactiveCells: "비활성 셀 지정",
+
+          // 메시지 및 알림
+          selectCellFirst: "먼저 시작 셀을 선택해주세요",
+          noImages: "표시할 이미지가 없습니다",
+          insertSuccess: "✅ 이미지 삽입 완료!",
+          insertSuccessDetail:
+            "삽입됨: {completed}개\n실패: {failed}개\n\n새로고침 이후에 스프레드시트에 이미지가 표시됩니다.",
+          saved: "저장되었습니다. 이미지 목록이 초기화됩니다.",
+          cancelConfirm: "이미지 삽입 작업을 취소하시겠습니까?",
+          cancelSuccess: "작업이 취소되었습니다.",
+          cancelFailed: "작업 취소에 실패했습니다.",
+          selectCellPrompt: "셀을 선택한 후 버튼을 눌러주세요.",
+          cellSizeReadFailed: "셀 크기 읽기에 실패했습니다.\n오류: {error}",
+          cellSizeReadError: "셀 크기 읽기 중 오류가 발생했습니다.\n{error}",
+          cellInfoReadError: "셀 정보를 읽는 중 오류가 발생했습니다.\n{error}",
+          errorOccurred: "오류 발생: {error}",
+          imageProcessError: "이미지 처리 중 오류가 발생했습니다: {error}",
+          insertFailed: "이미지 삽입 실패: {error}",
+          serverError: "서버 통신 오류",
+          serverNoResponse: "오류: 서버에서 응답이 없습니다.",
+          imageNotFile: "⚠️ 이미지가 아닙니다: {name}",
+          selectFiles: "⚠️ 파일을 선택해주세요",
+          deleteImage: "삭제",
+
+          // 프리셋 관련
+          presetNamePrompt: "프리셋 이름을 입력하세요:",
+          presetDescPrompt: "설명 (선택):",
+          presetOverwrite:
+            '"{name}" 프리셋이 이미 존재합니다. 덮어쓰시겠습니까?',
+          presetSaved: "✅ 프리셋이 저장되었습니다: {name}",
+          presetLoaded: "✅ 프리셋이 로드되었습니다: {name}",
+          presetDeleteConfirm: '"{name}" 프리셋을 삭제하시겠습니까?',
+          presetDeleted: "✅ 프리셋이 삭제되었습니다: {name}",
+
+          // 검증 메시지
+          validationRowRange: "행 개수는 1~50 사이여야 합니다.",
+          validationColRange: "열 개수는 1~50 사이여야 합니다.",
+          validationRowGapRange: "행 간격은 0~20 사이여야 합니다.",
+          validationColGapRange: "열 간격은 0~20 사이여야 합니다.",
+          validationNoCells: "배치 가능한 셀이 없습니다.",
+        },
+        en: {
+          // Header
+          title: "Insert Images For Spreadsheet",
+          themeToggleDark: "Switch to Light Mode",
+          themeToggleLight: "Switch to Dark Mode",
+
+          // Buttons
+          uploadBtn: "📁 Upload Images",
+          apply: "Apply",
+          cancel: "Cancel",
+          save: "💾 Save",
+          select: "Select",
+          selectReading: "Reading...",
+          savePreset: "Save Current Settings",
+          deletePreset: "Delete Preset",
+
+          // Labels and Sections
+          importedImages: "Imported Images",
+          settings: "Settings",
+          preset: "Preset:",
+          presetSelect: "-- Select Preset --",
+          presetHelp:
+            "You can save the current settings as a preset or load a saved preset.",
+          selectedCell: "Selected Cell:",
+          selectCellPlaceholder: "Please select a cell",
+          selectCellHelp:
+            "Click the Select button to reflect the currently selected cell in the spreadsheet.",
+          cellInfoRow: "Row",
+          cellInfoCol: "Column",
+          cellInfoWidth: "Width (px)",
+          cellInfoHeight: "Height (px)",
+          rowCount: "Row Count:",
+          colCount: "Column Count:",
+          rowGap: "Row Gap:",
+          colGap: "Column Gap:",
+          imageWidth: "Image Width (px):",
+          imageHeight: "Image Height (px):",
+
+          // Checkboxes
+          fitToCell: "Fit to Cell Size",
+          maintainRatio: "Maintain Image Ratio",
+          inactiveCells: "Specify Inactive Cells",
+
+          // Messages and Alerts
+          selectCellFirst: "Please select a starting cell first",
+          noImages: "No images to display",
+          insertSuccess: "✅ Images inserted successfully!",
+          insertSuccessDetail:
+            "Inserted: {completed}\nFailed: {failed}\n\nImages will appear in the spreadsheet after refresh.",
+          saved: "Saved successfully. Image list has been reset.",
+          cancelConfirm: "Are you sure you want to cancel the image insertion?",
+          cancelSuccess: "Operation cancelled successfully.",
+          cancelFailed: "Failed to cancel the operation.",
+          selectCellPrompt: "Please select a cell and then click the button.",
+          cellSizeReadFailed: "Failed to read cell size.\nError: {error}",
+          cellSizeReadError:
+            "An error occurred while reading cell size.\n{error}",
+          cellInfoReadError:
+            "An error occurred while reading cell information.\n{error}",
+          errorOccurred: "Error occurred: {error}",
+          imageProcessError:
+            "An error occurred while processing images: {error}",
+          insertFailed: "Image insertion failed: {error}",
+          serverError: "Server communication error",
+          serverNoResponse: "Error: No response from server.",
+          imageNotFile: "⚠️ Not an image file: {name}",
+          selectFiles: "⚠️ Please select files",
+          deleteImage: "Delete",
+
+          // Preset related
+          presetNamePrompt: "Enter preset name:",
+          presetDescPrompt: "Description (optional):",
+          presetOverwrite: 'Preset "{name}" already exists. Overwrite?',
+          presetSaved: "✅ Preset saved: {name}",
+          presetLoaded: "✅ Preset loaded: {name}",
+          presetDeleteConfirm: 'Delete preset "{name}"?',
+          presetDeleted: "✅ Preset deleted: {name}",
+
+          // Validation Messages
+          validationRowRange: "Row count must be between 1 and 50.",
+          validationColRange: "Column count must be between 1 and 50.",
+          validationRowGapRange: "Row gap must be between 0 and 20.",
+          validationColGapRange: "Column gap must be between 0 and 20.",
+          validationNoCells: "No cells available for placement.",
+        },
+      };
+
+      let currentLanguage = "ko"; // 기본값
+
+      /**
+       * 번역 함수 - 키에 해당하는 번역 텍스트 반환
+       * @param {string} key - 번역 키
+       * @param {object} params - 템플릿 매개변수 (예: {name: 'test'})
+       * @returns {string} 번역된 텍스트
+       */
+      function t(key, params = {}) {
+        const translations = i18n[currentLanguage] || i18n["en"];
+        let text = translations[key] || key;
+
+        // 템플릿 변수 치환 (예: "{name}" -> params.name)
+        Object.keys(params).forEach((param) => {
+          text = text.replace(new RegExp(`\\{${param}\\}`, "g"), params[param]);
+        });
+
+        return text;
+      }
+
+      /* ======================
    Global State & Constants
    ====================== */
 
@@ -380,10 +575,166 @@
       });
 
       function initializeApp() {
-        loadSettings();
-        loadTheme(); // 저장된 테마 로드
-        setupEventListeners();
-        updateUI();
+        // 언어 감지 및 로드
+        google.script.run
+          .withSuccessHandler(function (language) {
+            currentLanguage = language || "ko";
+            console.log(`✅ 사용자 언어 설정: ${currentLanguage}`);
+            applyTranslations();
+            loadSettings();
+            loadTheme();
+            setupEventListeners();
+            updateUI();
+          })
+          .withFailureHandler(function (error) {
+            console.warn("⚠️ 언어 감지 실패, 기본 언어 사용:", error);
+            currentLanguage = "ko";
+            applyTranslations();
+            loadSettings();
+            loadTheme();
+            setupEventListeners();
+            updateUI();
+          })
+          .getUserLanguage();
+      }
+
+      /**
+       * 번역을 UI에 적용
+       */
+      function applyTranslations() {
+        console.log(`🌐 번역 적용 중: ${currentLanguage}`);
+
+        // 버튼
+        const uploadBtn = document.getElementById("uploadBtn");
+        if (uploadBtn) uploadBtn.textContent = t("uploadBtn");
+
+        const completeBtn = document.getElementById("completeBtn");
+        if (completeBtn) completeBtn.textContent = t("apply");
+
+        const cancelBtn = document.getElementById("cancelBtn");
+        if (cancelBtn) cancelBtn.textContent = t("cancel");
+
+        const selectCellBtn = document.getElementById("selectCellBtn");
+        if (selectCellBtn) selectCellBtn.textContent = t("select");
+
+        // 라벨
+        document.querySelectorAll('label[for="selectedCell"]').forEach((el) => {
+          el.textContent = t("selectedCell");
+        });
+
+        document.querySelectorAll('label[for="rowCount"]').forEach((el) => {
+          el.textContent = t("rowCount");
+        });
+
+        document.querySelectorAll('label[for="colCount"]').forEach((el) => {
+          el.textContent = t("colCount");
+        });
+
+        document.querySelectorAll('label[for="rowGap"]').forEach((el) => {
+          el.textContent = t("rowGap");
+        });
+
+        document.querySelectorAll('label[for="colGap"]').forEach((el) => {
+          el.textContent = t("colGap");
+        });
+
+        document.querySelectorAll('label[for="imageWidth"]').forEach((el) => {
+          el.textContent = t("imageWidth");
+        });
+
+        document.querySelectorAll('label[for="imageHeight"]').forEach((el) => {
+          el.textContent = t("imageHeight");
+        });
+
+        // 섹션 타이틀
+        const sectionTitles = document.querySelectorAll(".section-title");
+        if (sectionTitles.length > 0) {
+          sectionTitles[0].textContent = t("importedImages");
+        }
+        if (sectionTitles.length > 1) {
+          sectionTitles[1].textContent = t("settings");
+        }
+
+        // 체크박스 라벨
+        const fitToCellLabel = document.querySelector(
+          'label[for="fitToCellCheckbox"] span'
+        );
+        if (fitToCellLabel) fitToCellLabel.textContent = t("fitToCell");
+
+        const maintainRatioLabel = document.querySelector(
+          'label[for="maintainRatioCheckbox"] span'
+        );
+        if (maintainRatioLabel)
+          maintainRatioLabel.textContent = t("maintainRatio");
+
+        const inactiveCellLabel = document.querySelector(
+          'label[for="inactiveCellCheckbox"] span'
+        );
+        if (inactiveCellLabel)
+          inactiveCellLabel.textContent = t("inactiveCells");
+
+        // Placeholder
+        const selectedCellInput = document.getElementById("selectedCell");
+        if (selectedCellInput)
+          selectedCellInput.placeholder = t("selectCellPlaceholder");
+
+        // 프리셋 관련
+        const presetSelect = document.getElementById("presetSelect");
+        if (presetSelect && presetSelect.options.length > 0) {
+          presetSelect.options[0].textContent = t("presetSelect");
+        }
+
+        // 셀 정보 라벨
+        const cellInfoLabels = document.querySelectorAll(
+          "#cellInfoDisplay span"
+        );
+        if (cellInfoLabels.length >= 4) {
+          cellInfoLabels[0].textContent = t("cellInfoRow");
+          cellInfoLabels[1].textContent = t("cellInfoCol");
+          cellInfoLabels[2].textContent = t("cellInfoWidth");
+          cellInfoLabels[3].textContent = t("cellInfoHeight");
+        }
+
+        // 프리셋 라벨 찾기
+        const presetLabels = document.querySelectorAll("label");
+        presetLabels.forEach((label) => {
+          if (
+            label.textContent.includes("프리셋") ||
+            label.textContent.includes("Preset")
+          ) {
+            label.textContent = t("preset");
+          }
+        });
+
+        // 도움말 텍스트
+        const helpTexts = document.querySelectorAll("small");
+        helpTexts.forEach((small) => {
+          const text = small.textContent.trim();
+          if (
+            text.includes("현재 설정을 프리셋으로") ||
+            text.includes("save the current settings")
+          ) {
+            small.textContent = t("presetHelp");
+          } else if (
+            text.includes("선택 버튼을 누르면") ||
+            text.includes("Click the Select button")
+          ) {
+            small.textContent = t("selectCellHelp");
+          }
+        });
+
+        // 아이콘 버튼 title
+        const savePresetBtn = document.querySelector(
+          'button[onclick="savePreset()"]'
+        );
+        if (savePresetBtn) savePresetBtn.title = t("savePreset");
+
+        const deletePresetBtn = document.querySelector(
+          'button[onclick*="deletePreset"]'
+        );
+        if (deletePresetBtn) deletePresetBtn.title = t("deletePreset");
+
+        console.log(`✅ 번역 적용 완료: ${currentLanguage}`);
       }
 
       /* ======================
@@ -448,7 +799,7 @@
         if (button) {
           button.textContent = theme === "dark" ? "☀️" : "🌙";
           button.title =
-            theme === "dark" ? "밝은 모드로 전환" : "어두운 모드로 전환";
+            theme === "dark" ? t("themeToggleDark") : t("themeToggleLight");
         }
       }
 
@@ -529,7 +880,7 @@
         const files = Array.from(e.target.files || e.dataTransfer?.files || []);
 
         if (files.length === 0) {
-          console.warn("⚠️ 파일을 선택해주세요");
+          console.warn(t("selectFiles"));
           return;
         }
 
@@ -542,7 +893,7 @@
         const imageLoadPromises = files
           .map((file, index) => {
             if (!file.type.startsWith("image/")) {
-              console.warn(`⚠️ 이미지가 아닙니다: ${file.name}`);
+              console.warn(t("imageNotFile", { name: file.name }));
               return Promise.reject(new Error(`Not an image: ${file.name}`));
             }
 
@@ -755,7 +1106,7 @@
             <div class="image-item-actions">
               <button class="icon-btn" onclick="removeImage('${
                 image.id
-              }')" title="삭제">🗑️</button>
+              }')" title="${t("deleteImage")}">🗑️</button>
             </div>
           `;
 
@@ -1147,7 +1498,7 @@
           appState.isProcessing = false;
           updateCompleteButtonState();
           localStorage.removeItem(STORAGE_KEYS.insertionState);
-          alert("저장되었습니다. 이미지 목록이 초기화됩니다.");
+          alert(t("saved"));
           return;
         }
 
@@ -1155,7 +1506,7 @@
         // 유효성 검증
         const validation = validateLayoutAndImages();
         if (!validation.valid) {
-          alert(validation.error);
+          alert(validation.error); // 이미 다국어화된 에러 메시지
           return;
         }
 
@@ -1196,12 +1547,16 @@
                   );
                   proceedWithImageInsertion(validation);
                 } else {
-                  alert("셀 크기를 읽을 수 없습니다.");
+                  alert(
+                    t("cellSizeReadFailed", {
+                      error: result.error || "Unknown",
+                    })
+                  );
                 }
               })
               .withFailureHandler(function (error) {
                 console.error(`❌ 셀 크기 읽기 실패: ${error}`);
-                alert("셀 크기 읽기 중 오류 발생");
+                alert(t("cellSizeReadError", { error: error.toString() }));
               })
               .getSelectedCellDimensions();
 
@@ -1225,12 +1580,12 @@
         logImagePlacementInfo();
 
         if (!appState.selectedCell) {
-          alert("먼저 시작 셀을 선택해주세요");
+          alert(t("selectCellFirst"));
           return;
         }
 
         if (appState.images.length === 0) {
-          alert("표시할 이미지가 없습니다");
+          alert(t("noImages"));
           return;
         }
 
@@ -1321,8 +1676,8 @@
                 // ✅ 결과 검증
                 if (!result) {
                   console.error("❌ Backend에서 결과를 반환하지 않음");
-                  setProgressError("서버 오류: 응답 없음");
-                  alert("오류: 서버에서 응답이 없습니다.");
+                  setProgressError(t("serverError"));
+                  alert(t("serverNoResponse"));
                   appState.isProcessing = false;
                   updateCompleteButtonState();
                   hideProgress();
@@ -1334,10 +1689,12 @@
                   setProgress(100);
 
                   alert(
-                    `✅ 이미지 삽입 완료!\n` +
-                      `삽입됨: ${result.completed}개\n` +
-                      `실패: ${result.failed}개\n\n` +
-                      `새로고침 이후에 스프레드시트에 이미지가 표시됩니다.`
+                    t("insertSuccess") +
+                      "\n" +
+                      t("insertSuccessDetail", {
+                        completed: result.completed,
+                        failed: result.failed,
+                      })
                   );
 
                   console.log(
@@ -1389,7 +1746,7 @@
                     });
                   }
 
-                  alert("이미지 삽입 실패: " + errorMessage);
+                  alert(t("insertFailed", { error: errorMessage }));
                   appState.isUploading = false;
                   appState.isProcessing = false;
                   updateCompleteButtonState();
@@ -1404,8 +1761,12 @@
                   toString: error.toString(),
                 });
 
-                setProgressError("서버 통신 오류");
-                alert("오류 발생: " + (error.message || error.toString()));
+                setProgressError(t("serverError"));
+                alert(
+                  t("errorOccurred", {
+                    error: error.message || error.toString(),
+                  })
+                );
 
                 appState.isUploading = false;
                 appState.isProcessing = false;
@@ -1421,8 +1782,8 @@
           })
           .catch((error) => {
             console.error("❌ 이미지 리사이징 중 오류:", error);
-            setProgressError(error.message || "이미지 처리 중 오류 발생");
-            alert("이미지 처리 중 오류가 발생했습니다: " + error.message);
+            setProgressError(error.message || t("imageProcessError"));
+            alert(t("imageProcessError", { error: error.message }));
 
             appState.isUploading = false;
             appState.isProcessing = false;
@@ -1435,7 +1796,7 @@
         console.log("⚠️ 작업 취소 버튼 클릭");
 
         if (appState.isProcessing) {
-          const confirmed = confirm("이미지 삽입 작업을 취소하시겠습니까?");
+          const confirmed = confirm(t("cancelConfirm"));
           if (!confirmed) {
             return;
           }
@@ -1452,13 +1813,13 @@
               appState.isUploading = false;
               updateCompleteButtonState();
               hideProgress();
-              alert("작업이 취소되었습니다.");
+              alert(t("cancelSuccess"));
             })
             .withFailureHandler(function (error) {
               console.error("❌ Undo 실패:", error);
               appState.isUploading = false;
               updateCompleteButtonState();
-              alert("작업 취소에 실패했습니다.");
+              alert(t("cancelFailed"));
             })
             .undoLastAction();
         }
@@ -1475,13 +1836,13 @@
         }
 
         if (appState.isProcessing) {
-          completeBtn.textContent = "💾 저장";
+          completeBtn.textContent = t("save");
           completeBtn.classList.add("btn-success");
           cancelBtn.classList.remove("hidden");
           completeBtn.disabled = false; // 저장 상태에서는 항상 활성화
           cancelBtn.disabled = false;
         } else {
-          completeBtn.textContent = "적용";
+          completeBtn.textContent = t("apply");
           completeBtn.classList.remove("hidden");
           cancelBtn.classList.add("hidden");
           completeBtn.disabled =
@@ -1649,14 +2010,14 @@
        * 현재 설정을 프리셋으로 저장합니다
        */
       function savePreset() {
-        const presetName = prompt("프리셋 이름을 입력하세요:");
+        const presetName = prompt(t("presetNamePrompt"));
         if (!presetName || presetName.trim() === "") {
           return;
         }
 
         const preset = {
           name: presetName.trim(),
-          description: prompt("설명 (선택):") || "",
+          description: prompt(t("presetDescPrompt")) || "",
           settings: {
             patternSettings: { ...appState.patternSettings },
             imageSizeSettings: { ...appState.imageSizeSettings },
@@ -1673,9 +2034,7 @@
         // 같은 이름의 프리셋이 있으면 덮어쓰기 확인
         const existingIndex = presets.findIndex((p) => p.name === presetName);
         if (existingIndex >= 0) {
-          const overwrite = confirm(
-            `"${presetName}" 프리셋이 이미 존재합니다. 덮어쓰시겠습니까?`
-          );
+          const overwrite = confirm(t("presetOverwrite", { name: presetName }));
           if (overwrite) {
             presets[existingIndex] = preset;
           } else {
@@ -1687,7 +2046,7 @@
 
         localStorage.setItem(STORAGE_KEYS.presets, JSON.stringify(presets));
         console.log(`✅ 프리셋 저장: ${presetName}`);
-        alert(`✅ 프리셋이 저장되었습니다: ${presetName}`);
+        alert(t("presetSaved", { name: presetName }));
 
         // UI 업데이트
         updatePresetList();
@@ -1712,7 +2071,7 @@
 
           updateUI();
           console.log(`✅ 프리셋 로드: ${presetName}`);
-          alert(`✅ 프리셋이 로드되었습니다: ${presetName}`);
+          alert(t("presetLoaded", { name: presetName }));
         }
       }
 
@@ -1720,7 +2079,9 @@
        * 프리셋 삭제
        */
       function deletePreset(presetName) {
-        const confirmed = confirm(`"${presetName}" 프리셋을 삭제하시겠습니까?`);
+        const confirmed = confirm(
+          t("presetDeleteConfirm", { name: presetName })
+        );
         if (!confirmed) return;
 
         const presets = JSON.parse(
@@ -1730,7 +2091,7 @@
 
         localStorage.setItem(STORAGE_KEYS.presets, JSON.stringify(filtered));
         console.log(`✅ 프리셋 삭제: ${presetName}`);
-        alert(`✅ 프리셋이 삭제되었습니다: ${presetName}`);
+        alert(t("presetDeleted", { name: presetName }));
 
         updatePresetList();
       }
@@ -2001,14 +2362,14 @@
         if (!appState.selectedCell) {
           return {
             valid: false,
-            error: "셀을 먼저 선택해주세요.",
+            error: t("selectCellFirst"),
           };
         }
 
         if (appState.images.length === 0) {
           return {
             valid: false,
-            error: "이미지를 먼저 선택해주세요.",
+            error: t("noImages"),
           };
         }
 
@@ -2019,28 +2380,28 @@
         if (!rows || rows < 1 || rows > 50) {
           return {
             valid: false,
-            error: "행 개수는 1~50 사이여야 합니다.",
+            error: t("validationRowRange"),
           };
         }
 
         if (!cols || cols < 1 || cols > 50) {
           return {
             valid: false,
-            error: "열 개수는 1~50 사이여야 합니다.",
+            error: t("validationColRange"),
           };
         }
 
         if (rowGap < 0 || rowGap > 20) {
           return {
             valid: false,
-            error: "행 간격은 0~20 사이여야 합니다.",
+            error: t("validationRowGapRange"),
           };
         }
 
         if (colGap < 0 || colGap > 20) {
           return {
             valid: false,
-            error: "열 간격은 0~20 사이여야 합니다.",
+            error: t("validationColGapRange"),
           };
         }
 
@@ -2062,7 +2423,7 @@
         } else {
           return {
             valid: false,
-            error: "배치 가능한 셀이 없습니다.",
+            error: t("validationNoCells"),
           };
         }
       }
@@ -2128,7 +2489,7 @@
       function handleSelectCellClick() {
         const selectBtn = document.getElementById("selectCellBtn");
         selectBtn.disabled = true;
-        selectBtn.textContent = "읽는 중...";
+        selectBtn.textContent = t("selectReading");
 
         google.script.run
           .withSuccessHandler(function (result) {
@@ -2149,7 +2510,7 @@
               google.script.run
                 .withSuccessHandler(function (dimResult) {
                   selectBtn.disabled = false;
-                  selectBtn.textContent = "선택";
+                  selectBtn.textContent = t("select");
 
                   if (dimResult && dimResult.success) {
                     // 셀 크기 정보 저장
@@ -2178,33 +2539,33 @@
                     const errorMsg =
                       dimResult && dimResult.error
                         ? dimResult.error
-                        : "알 수 없는 오류";
+                        : "Unknown";
                     console.warn(`⚠️ 셀 크기 읽기 실패: ${errorMsg}`);
                     displayCellInfo(result.row, result.col, null, null);
-                    alert(`셀 크기 읽기에 실패했습니다.\n오류: ${errorMsg}`);
+                    alert(t("cellSizeReadFailed", { error: errorMsg }));
                   }
                 })
                 .withFailureHandler(function (error) {
                   selectBtn.disabled = false;
-                  selectBtn.textContent = "선택";
+                  selectBtn.textContent = t("select");
                   console.error(`❌ 셀 크기 읽기 오류: ${error}`);
                   displayCellInfo(result.row, result.col, null, null);
-                  alert(`셀 크기 읽기 중 오류가 발생했습니다.\n${error}`);
+                  alert(t("cellSizeReadError", { error: error.toString() }));
                 })
                 .getSelectedCellDimensions();
             } else {
               selectBtn.disabled = false;
-              selectBtn.textContent = "선택";
-              const errorMsg = result.error || "알 수 없는 오류";
+              selectBtn.textContent = t("select");
+              const errorMsg = result.error || "Unknown";
               console.error(`❌ 선택된 셀이 없습니다: ${errorMsg}`);
-              alert("셀을 선택한 후 버튼을 눌러주세요.");
+              alert(t("selectCellPrompt"));
             }
           })
           .withFailureHandler(function (error) {
             selectBtn.disabled = false;
-            selectBtn.textContent = "선택";
+            selectBtn.textContent = t("select");
             console.error(`❌ 셀 정보 읽기 오류: ${error}`);
-            alert(`셀 정보를 읽는 중 오류가 발생했습니다.\n${error}`);
+            alert(t("cellInfoReadError", { error: error.toString() }));
           })
           .getSelectedCellInfo();
       }

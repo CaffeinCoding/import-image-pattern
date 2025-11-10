@@ -472,3 +472,28 @@ function insertImageAtCell(
     throw e;
   }
 }
+
+/**
+ * 사용자 언어 감지
+ * @returns {string} 언어 코드 (예: 'ko', 'en')
+ */
+function getUserLanguage() {
+  try {
+    const userLocale = Session.getActiveUserLocale(); // 예: "ko_KR", "en_US"
+    const language = userLocale.split("_")[0]; // "ko", "en"
+
+    // 지원하는 언어 목록
+    const supportedLanguages = ["ko", "en"];
+
+    if (supportedLanguages.includes(language)) {
+      Logger.log(`✅ 사용자 언어 감지: ${language}`);
+      return language;
+    } else {
+      Logger.log(`⚠️ 지원하지 않는 언어 (${language}), 영어로 대체`);
+      return "en"; // 기본값: 영어
+    }
+  } catch (e) {
+    Logger.log("❌ 언어 감지 실패: " + e.toString());
+    return "en"; // 오류 시 기본값
+  }
+}
